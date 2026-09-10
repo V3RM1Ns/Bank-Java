@@ -19,4 +19,22 @@ public class Account {
         this.customer = Objects.requireNonNull(customer, "Customer cannot be null.");
         this.balance = 0.0;
     }
+
+    public void deposit(double amount){
+        if (amount<=0) throw new IllegalArgumentException("Deposit amount have to be above 0!");
+        balance+=amount;
+    }
+
+    public void withdraw(double amount){
+        if (amount<=0) throw new IllegalArgumentException("Withdraw amount have to be above 0!");
+        if(amount>balance) throw new IllegalArgumentException("Not enught balanca");
+        balance-=amount;
+    }
+
+    public void transfer(String accountNumber,double amount){
+
+    }
+
+
+
 }
