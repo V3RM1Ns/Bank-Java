@@ -3,26 +3,24 @@ package Models;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import Models.Records.*;
+import Utils.BankUtils;
 
 
 public final class Customer {
-
-    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(1);
-
-    private final int id;
+    private final String id;
     private String name;
     private Email email;
     private Phone phone;
 
 
     public Customer(String name, Email email, Phone phone) {
-        this.id = ID_GENERATOR.getAndIncrement();
+        this.id = BankUtils.generateId();
         setName(name);
         this.email = Objects.requireNonNull(email, "Customer email cannot be null.");
         this.phone = Objects.requireNonNull(phone, "Customer phone cannot be null.");
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 

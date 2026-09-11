@@ -1,27 +1,30 @@
 package Models;
 
 import Models.Enums.Type;
+import Utils.BankUtils;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Transaction {
-    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(1);
-
-    private final int id;
+    private final String id;
     private final Type type;
     private final double amount;
     private final LocalDateTime date;
+    private String description;
 
     public Transaction(Type type, double amount) {
-        this.id = ID_GENERATOR.getAndIncrement();
+        this(type, amount, null);
+    }
+
+    public Transaction(Type type, double amount, String description) {
+        this.id = BankUtils.generateId();
         this.type = type;
         this.amount = amount;
+        this.description = description;
         this.date = LocalDateTime.now();
     }
 
-
-    public int getId() {
+    public String getId() {
         return id;
     }
 
@@ -37,13 +40,18 @@ public class Transaction {
         return date;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     @Override
     public String toString() {
         return "Transaction{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", type=" + type +
                 ", amount=" + amount +
                 ", date=" + date +
+                ", description='" + description + '\'' +
                 '}';
     }
 }
