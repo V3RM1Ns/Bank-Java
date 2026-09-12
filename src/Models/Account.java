@@ -14,12 +14,18 @@ public class Account implements BankOperation {
     private final Customer customer;
     private double balance;
     private ArrayList<Transaction> transactions;
+    private Bank bank;
 
     public Account(Customer customer) {
         this.accountNumber = BankUtils.generateId();
         this.customer = Objects.requireNonNull(customer, "Customer cannot be null.");
         this.balance = 0.0;
         this.transactions = new ArrayList<>();
+    }
+
+    public Account(Customer customer, Bank bank) {
+        this(customer);
+        Objects.requireNonNull(bank, "Bank cannot be null.").addAccount(this);
     }
 
     public void deposit(double amount){
@@ -83,6 +89,10 @@ public class Account implements BankOperation {
         return this.customer;
     }
 
+    public Bank getBank() {
+        return bank;
+    }
+
     public double getBalance(){
         return balance;
     }
@@ -91,5 +101,8 @@ public class Account implements BankOperation {
         return Collections.unmodifiableList(transactions);
     }
 
+    void assignBank(Bank bank) {
+        this.bank = bank;
+    }
 
 }
