@@ -13,14 +13,17 @@ public class Account implements BankOperation {
     private final String accountNumber;
     private final Customer customer;
     private double balance;
-    private ArrayList<Transaction> transactions;
+    private final ArrayList<Transaction> transactions;
     private Bank bank;
+    private boolean blocked;
+    private double withdrawalLimit;
 
     public Account(Customer customer) {
         this.accountNumber = BankUtils.generateId();
         this.customer = Objects.requireNonNull(customer, "Customer cannot be null.");
         this.balance = 0.0;
         this.transactions = new ArrayList<>();
+        this.withdrawalLimit = Double.POSITIVE_INFINITY;
     }
 
     public Account(Customer customer, Bank bank) {
@@ -29,6 +32,7 @@ public class Account implements BankOperation {
     }
 
     public void deposit(double amount){
+        ensureNotBlocked();
         if (amount<=0) throw new IllegalArgumentException("Deposit amount have to be above 0!");
 
         balance+=amount;
@@ -38,6 +42,7 @@ public class Account implements BankOperation {
         transactions.add(transaction);
     }
     public void deposit(double amount,String desc){
+        ensureNotBlocked();
         if (amount<=0) throw new IllegalArgumentException("Deposit amount have to be above 0!");
 
         balance+=amount;
@@ -48,7 +53,9 @@ public class Account implements BankOperation {
 
 
     public void withdraw(double amount){
+        ensureNotBlocked();
         if (amount<=0) throw new IllegalArgumentException("Withdraw amount have to be above 0!");
+        if(amount>withdrawalLimit) throw new IllegalArgumentException("Withdraw amount exceeds the withdrawal limit.");
         if(amount>balance) throw new IllegalArgumentException("Not enught balanca");
 
         balance-=amount;
@@ -64,7 +71,10 @@ public class Account implements BankOperation {
 
     public void transfer(Account receiver, double amount, String description){
         if (receiver == null) throw new IllegalArgumentException("Receiver account not found.");
+        if (receiver == this) throw new IllegalArgumentException("Sender and receiver accounts cannot be the same.");
         if (amount<=0) throw new IllegalArgumentException("Withdraw amount have to be above 0!");
+        ensureNotBlocked();
+        receiver.ensureNotBlocked();
 
         withdraw(amount);
         String transferDescription = "Gonderen: " + customer.getName();
@@ -75,6 +85,47 @@ public class Account implements BankOperation {
 
         Transaction transaction = new Transaction(Type.Transfer, amount, transferDescription);
         transactions.add(transaction);
+    }
+
+    public double calculateInterest(double ratePercent) {
+        validateRate(ratePercent);
+        return balance * ratePercent / 100;
+    }
+
+    public double applyInterest(double ratePercent) {
+        ensureNotBlocked();
+        double interest = calculateInterest(ratePercent);
+        if (interest > 0) {
+            balance += interest;
+            transactions.add(new Transaction(Type.Interest, interest,
+                    "Interest rate: " + ratePercent + "%"));
+        }
+        return interest;
+    }
+
+    public void block() {
+        blocked = true;
+    }
+
+    public void unblock() {
+        blocked = false;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setWithdrawalLimit(double withdrawalLimit) {
+        if (Double.isNaN(withdrawalLimit)
+                || withdrawalLimit <= 0
+                || withdrawalLimit == Double.POSITIVE_INFINITY) {
+            throw new IllegalArgumentException("Withdrawal limit must be a finite positive number.");
+        }
+        this.withdrawalLimit = withdrawalLimit;
+    }
+
+    public double getWithdrawalLimit() {
+        return withdrawalLimit;
     }
 
     public String getAccountNumber(){
@@ -103,6 +154,20 @@ public class Account implements BankOperation {
 
     void assignBank(Bank bank) {
         this.bank = bank;
+    }
+
+    private void ensureNotBlocked() {
+        if (blocked) {
+            throw new IllegalArgumentException("Account is blocked.");
+        }
+    }
+
+    private static void validateRate(double ratePercent) {
+        if (Double.isNaN(ratePercent)
+                || Double.isInfinite(ratePercent)
+                || ratePercent < 0) {
+            throw new IllegalArgumentException("Interest rate must be a finite non-negative number.");
+        }
     }
 
 }
