@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Account implements BankOperation {
     private final String accountNumber;
@@ -150,6 +151,13 @@ public class Account implements BankOperation {
 
     public List<Transaction> getTransactions() {
         return Collections.unmodifiableList(transactions);
+    }
+
+    public Optional<Transaction> getLastTransaction() {
+        if (transactions.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(transactions.get(transactions.size() - 1));
     }
 
     void assignBank(Bank bank) {
